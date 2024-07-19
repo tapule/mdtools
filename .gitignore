@@ -1,0 +1,54 @@
+# Object files
+*.o
+*.ko
+*.obj
+*.elf
+
+# Linker output
+*.ilk
+*.map
+*.exp
+
+# Libraries
+*.lib
+*.a
+*.la
+*.lo
+
+# Shared objects
+*.so
+*.so.*
+*.dylib
+
+# rom files
+*.bin
+
+# Symbols
+symbol.txt
+
+# VSCode project files
+*.code*
+.vscode
+
+# Other files
+*.zip
+*.rar
+*.tar.gz
+*.tar.bz2
+*.tar.xz
+*.bak
+*.bk
+*.log
+*.tmp
+*.lst
+*.old
+*.gen
+*~
+dep-*
+mk-*
+
+# Work dirs
+build
+tools
+wip
+
