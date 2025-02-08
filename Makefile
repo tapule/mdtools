@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: MIT
 #
 # -- MegaDrive development tools --
-# Coded by: Juan Ángel Moreno Fernández (@_tapule) 2024
+# Coded by: Juan Ángel Moreno Fernández (@_tapule) 2025
 # Github: https://github.com/tapule/mdtools
 #
 
@@ -23,12 +23,13 @@ BINTOC_VER        ?= 0.01
 PALTOOL_VER       ?= 0.03
 TILEIMAGETOOL_VER ?= 0.02
 TILESETTOOL_VER   ?= 0.02
+ASSETSTOOL_VER    ?= 0.01
 WAVTORAW_VER      ?= 1.2
 XGMTOOL_VER       ?= 1.73
 
-.PHONY: all bintoc paltool tileimagetool tilesettool  wavtoraw xgmtool
+.PHONY: all bintoc paltool tileimagetool tilesettool assetstool  wavtoraw xgmtool
 
-all: info bintoc paltool tileimagetool tilesettool  wavtoraw xgmtool
+all: info bintoc paltool tileimagetool tilesettool assetstool wavtoraw xgmtool
 
 bintoc:
 	@echo "$(COLOR_GREEN)>> Building bintoc...$(COLOR_RESET)"
@@ -45,6 +46,10 @@ tileimagetool:
 tilesettool:
 	@echo "$(COLOR_GREEN)>> Building tilesettool...$(COLOR_RESET)"
 	@make -C tilesettool BUILD_DIR=$(BUILD_DIR)
+
+assetstool:
+	@echo "$(COLOR_GREEN)>> Building assetstool...$(COLOR_RESET)"
+	@make -C assetstool BUILD_DIR=$(BUILD_DIR)
 
 wavtoraw:
 	@echo "$(COLOR_GREEN)>> Building wawtoraw...$(COLOR_RESET)"
@@ -77,6 +82,7 @@ info:
 	@echo "        PALTOOL_VER $(PALTOOL_VER)"
 	@echo "        TILEIMAGETOOL_VER $(TILEIMAGETOOL_VER)"
 	@echo "        TILESETTOOL_VER $(TILESETTOOL_VER)"
+	@echo "        ASSETSTOOL_VER $(ASSETSTOOL_VER)"
 	@echo "        WAVTORAW_VER $(WAVTORAW_VER)"
 	@echo "        XGMTOOL_VER $(XGMTOOL_VER)"
 
@@ -96,6 +102,7 @@ clean:
 	@make -C paltool clean
 	@make -C tileimagetool clean
 	@make -C tilesettool clean
+	@make -C assetstool clean
 	@make -C wavtoraw clean
 	@make -C xgmtool clean
 	rm -rf $(BUILD_DIR)
