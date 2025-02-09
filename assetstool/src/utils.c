@@ -15,7 +15,7 @@
 #include <ctype.h>
 
 void
-utils_str_toupper(const char *str) {
+utils_str_toupper(char *str) {
     char *c;
     c = str;
 

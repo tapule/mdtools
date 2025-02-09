@@ -8,6 +8,8 @@
 BUILD_DIR   := $(shell pwd)/build
 INSTALL_DIR ?= $(shell pwd)/tools
 
+DEBUG ?=
+
 # Some ANSI terminal color codes
 COLOR_RESET      = $'\033[0m
 COLOR_RED        = $'\033[1;31;49m
@@ -49,7 +51,7 @@ tilesettool:
 
 assetstool:
 	@echo "$(COLOR_GREEN)>> Building assetstool...$(COLOR_RESET)"
-	@make -C assetstool BUILD_DIR=$(BUILD_DIR)
+	@make -C assetstool BUILD_DIR=$(BUILD_DIR) $(DEBUG)
 
 wavtoraw:
 	@echo "$(COLOR_GREEN)>> Building wawtoraw...$(COLOR_RESET)"

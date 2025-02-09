@@ -71,7 +71,7 @@ $(APP): build-msg $(OUTOBJS)
 
 build/obj/%.o: %.c
 	@mkdir -p $(dir $@)
-	$(CC) $(CCFLAGS) $(EXFLAGS) $(INCS) -c $< -o $@
+	$(CC) $(CFLAGS) $(EXFLAGS) $(INCS) -c $< -o $@
 
 # Simple build message
 .PHONY: build-msg

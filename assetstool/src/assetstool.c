@@ -41,8 +41,8 @@ main(int argc, char **argv) {
     params_status_t params_status;
 
     /* Set default values here */
-    params.input_path = ".";
-    params.output_path = ".";
+    //params.input_path = ".";
+    //params.output_path = ".";
 
     /* Argument reading and processing */
     params_status = params_parse(argc, argv, &params);
@@ -52,6 +52,11 @@ main(int argc, char **argv) {
     if (params_status == PARAMS_STOP) {
         return EXIT_SUCCESS;
     }
+    if (params_validate_paths(&params) == PARAMS_ERROR) {
+        fprintf(stderr, "Error en parámetros\n");
+    }
+    fprintf(stdout, "ipath: %s\nifile: %s\nopath: %s\n", params.input_path, params.input_file, params.output_path);
+
 #if 0
     /* First try to open source path as a directory */
     dir = opendir(params.src_path);

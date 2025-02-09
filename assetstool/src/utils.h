@@ -24,7 +24,7 @@ extern "C" {
  * \brief           Convert a string to upper case
  * \param[in,out]   str: String to convert
  */
-void utils_str_toupper(const char *str);
+void utils_str_toupper(char *str);
 
 /**
  * \brief           Swap nibbles in a byte
