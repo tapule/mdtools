@@ -105,7 +105,7 @@ const char help_text [] =
     "  -sa <integer>       Set a data size alignment for the converted data\n";
 
 /* Stores the input parameters */
-typedef struct params_t
+typedef struct args_t
 {
     char *src_path;         /* Folder with the source files */
     char *dest_path;        /* Destination folder for the generated .h and .c */
@@ -114,7 +114,7 @@ typedef struct params_t
     uint8_t type_size;      /* Destination type size in bytes, default 1 */
     int32_t memory_align;   /* Memory alignment size in bytes, default none */
     int32_t size_align;     /* Size alignment in bytes, default none */
-} params_t;
+} args_t;
 
 /* Stores files's data */
 typedef struct file_t
@@ -156,7 +156,7 @@ void strtoupper(char *str)
  *         1 if the arguments parse was ok but we must end (-v or -h)
  *         2 if the arguments parse was ok and we can continue
  */
-uint8_t parse_params(uint32_t argc, char** argv, params_t *params)
+uint8_t parse_params(uint32_t argc, char** argv, args_t *params)
 {
     uint32_t i;
 
@@ -564,7 +564,7 @@ bool build_source_file(const char *path, const char *name, const char *data_type
 
 int main(int argc, char **argv)
 {
-    params_t params = {0};
+    args_t params = {0};
     uint32_t file_index = 0;
     DIR *dir;
     char *file_name;

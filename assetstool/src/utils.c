@@ -7,7 +7,7 @@
  */
 
 /**
- * \file            utils.h
+ * \file            utils.c
  * \brief           General utility functions
  */
 

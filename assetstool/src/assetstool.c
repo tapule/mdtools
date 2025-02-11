@@ -24,8 +24,8 @@
 #include <sys/types.h>
 #include <unistd.h>
 #include "../libs/lodepng.h"
-#include "../libs/pdjson.h"
-#include "params.h"
+#include "cli_parser.h"
+#include "json_parser.h"
 
 #define MAX_TILESETS         512    /* Enough?? */
 #define MAX_FILE_NAME_LENGTH 128    /* Max length for file names */
@@ -33,29 +33,15 @@
 
 int
 main(int argc, char **argv) {
-    params_t params = {0};
+    args_t params = {0};
     uint32_t tileset_index = 0;
     DIR *dir;
     char *file_name;
     struct dirent *dir_entry;
-    params_status_t params_status;
-
-    /* Set default values here */
-    //params.input_path = ".";
-    //params.output_path = ".";
 
     /* Argument reading and processing */
-    params_status = params_parse(argc, argv, &params);
-    if (params_status == PARAMS_ERROR) {
-        return EXIT_FAILURE;
-    }
-    if (params_status == PARAMS_STOP) {
-        return EXIT_SUCCESS;
-    }
-    if (params_validate_paths(&params) == PARAMS_ERROR) {
-        fprintf(stderr, "Error en parámetros\n");
-    }
-    fprintf(stdout, "ipath: %s\nifile: %s\nopath: %s\n", params.input_path, params.input_file, params.output_path);
+    cli_parse(argc, argv, &params);
+    fprintf(stdout, "Processing file %s/%s\n", params.input_path, params.input_file);
 
 #if 0
     /* First try to open source path as a directory */

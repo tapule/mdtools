@@ -91,12 +91,12 @@ const char help_text [] =
     "                      will be used if there is only one source file\n";
 
 /* Stores the input parameters */
-typedef struct params_t
+typedef struct args_t
 {
     char *src_path;   /* Folder with the source images in png files */
     char *dest_path;  /* Destination folder for the generated .h and .c */
     char *dest_name;  /* Base name for the generated .h and .c files */
-} params_t;
+} args_t;
 
 /* Stores tileset's data */
 typedef struct tileset_t
@@ -235,7 +235,7 @@ uint8_t *image_4bpp_to_tile(uint8_t *image, const uint32_t width, const uint32_t
  *         1 if the arguments parse was ok but we must end (-v or -h)
  *         2 if the arguments parse was ok and we can continue
  */
-uint8_t parse_params(uint32_t argc, char** argv, params_t *params)
+uint8_t parse_params(uint32_t argc, char** argv, args_t *params)
 {
     uint32_t i;
 
@@ -599,7 +599,7 @@ bool build_source_file(const char *path, const char *name,
 
 int main(int argc, char **argv)
 {
-    params_t params = {0};
+    args_t params = {0};
     uint32_t tileset_index = 0;
     DIR *dir;
     char *file_name;
