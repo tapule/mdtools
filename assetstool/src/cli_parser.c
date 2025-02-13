@@ -63,15 +63,15 @@ cli_version(const char *const restrict app) {
  * \brief           Show usage information plus an optional message and exit
  * \param[in]       app: App name
  * \param[in]       exit_code: Exit code to return to the OS
- * \param[in]       reason: Optional message to show (with optionals arguments)
- * \param[in]       ...: Arguments for reason message
+ * \param[in]       msg: Optional message to show (with optionals arguments)
+ * \param[in]       ...: Arguments for message
  */
 static void
-cli_usage(const char *const restrict app, const int exit_code, const char *const restrict reason, ...) {
-    if (reason != nullptr) {
+cli_usage(const char *const restrict app, const int exit_code, const char *const restrict msg, ...) {
+    if (msg != nullptr) {
         va_list args;
         va_start(args);
-        vfprintf(stderr, reason, args);
+        vfprintf(stderr, msg, args);
         va_end(args);
         fprintf(stderr, "\n\n");
     }
@@ -82,16 +82,16 @@ cli_usage(const char *const restrict app, const int exit_code, const char *const
 /**
  * \brief           Show an error message and exit
  * \param[in]       app: App name
- * \param[in]       reason: Error message to show (with optionals arguments)
+ * \param[in]       msg: Error message to show (with optionals arguments)
  * \param[in]       ...: Arguments for error message
  */
 static void
-cli_error(const char *const restrict app, const char *const restrict error, ...) {
-    if (error != nullptr) {
+cli_error(const char *const restrict app, const char *const restrict msg, ...) {
+    if (msg != nullptr) {
         va_list args;
         va_start(args);
         fprintf(stderr, "%s:\n", app);
-        vfprintf(stderr, error, args);
+        vfprintf(stderr, msg, args);
         va_end(args);
         fprintf(stderr, "\n");
     }

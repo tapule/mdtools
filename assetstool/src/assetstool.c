@@ -25,7 +25,7 @@
 #include <unistd.h>
 #include "../libs/lodepng.h"
 #include "cli_parser.h"
-#include "json_parser.h"
+#include "assets_parser.h"
 
 #define MAX_TILESETS         512    /* Enough?? */
 #define MAX_FILE_NAME_LENGTH 128    /* Max length for file names */
@@ -41,6 +41,14 @@ main(int argc, char **argv) {
 
     /* Argument reading and processing */
     cli_parse(argc, argv, &params);
+    char path[1024] = {0};
+    strcpy(path, params.input_path);
+    strcat(path, "/");
+    strcat(path, params.input_file);
+
+    assets_t assets;
+
+    assets_parse(path, &assets);
     fprintf(stdout, "Processing file %s/%s\n", params.input_path, params.input_file);
 
 #if 0
