@@ -53,6 +53,13 @@ struct asset_frame_t {
     asset_frame_t *next;
 };
 
+typedef struct asset_sequence_idx_t asset_sequence_idx_t;
+
+struct asset_sequence_idx_t {
+    uint8_t idx;
+    asset_sequence_idx_t *next;
+};
+
 typedef struct asset_desc_t asset_desc_t;
 
 struct asset_desc_t {
@@ -96,8 +103,7 @@ struct asset_desc_t {
 
             uint8_t rate;
             uint8_t delay;
-            uint8_t *frame_count; // Número de elementos array
-            uint8_t *anim;        // Puntero al primer elemento del array
+            asset_sequence_idx_t *sequence;
         } anim;
     };
 
