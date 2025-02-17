@@ -33,7 +33,7 @@ typedef struct args_t {
     char *input_path;           /**< Input assets json script file path */
     char *output_path;          /**< Output folder for the generated .h and .c */
     bool debug_mode;            /**< Debug mode enabled flag */
-    bool disable_palletes;      /**< Disable palletes processing flag */
+    bool disable_palettes;      /**< Disable palettes processing flag */
     bool disable_tilesets;      /**< Disable tilesets processing flag */
     bool disable_sheets;        /**< Disable sheets processing flag */
     bool disable_anims;         /**< Disable anims processing flag */

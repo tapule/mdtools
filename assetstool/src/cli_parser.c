@@ -42,7 +42,7 @@ static const char usage_text[] =
     "  -o <path>           Output path for the generated assets files\n"
     "                      The current directory will be used by default\n"
     "  -d                  Enable debug mode\n"
-    "  -dp                 Disable palletes processing\n"
+    "  -dp                 Disable palettes processing\n"
     "  -dt                 Disable tilesets processing\n"
     "  -ds                 Disable sheets processing\n"
     "  -da                 Disable anims processing\n"
@@ -157,8 +157,8 @@ cli_parse(const uint32_t argc, char *const *const argv, args_t *const restrict a
         /* Input flags parsing */
         else if ((strcmp(argv[i], "-d") == 0) || (strcmp(argv[i], "--debug") == 0)) {
             args->debug_mode = true;
-        } else if ((strcmp(argv[i], "-dp") == 0) || (strcmp(argv[i], "--dissable-palletes") == 0)) {
-            args->disable_palletes = true;
+        } else if ((strcmp(argv[i], "-dp") == 0) || (strcmp(argv[i], "--dissable-palettes") == 0)) {
+            args->disable_palettes = true;
         } else if ((strcmp(argv[i], "-dt") == 0) || (strcmp(argv[i], "--dissable-tilesets") == 0)) {
             args->disable_tilesets = true;
         } else if ((strcmp(argv[i], "-ds") == 0) || (strcmp(argv[i], "--dissable-sheets") == 0)) {
