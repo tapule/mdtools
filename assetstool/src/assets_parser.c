@@ -71,6 +71,7 @@ asset_parse_palettes(json_stream *const restrict stream, assets_t *const restric
         }
         memset(asset, 0, sizeof(*asset));
 
+        ++assets->palettes_count;
         while (json_peek(stream) != JSON_OBJECT_END && json_get_error(stream) == nullptr) {
             char key[32] = {0};
             const char *value = nullptr;
@@ -152,6 +153,7 @@ asset_parse_tilesets(json_stream *const restrict stream, assets_t *const restric
         }
         memset(asset, 0, sizeof(*asset));
 
+        ++assets->tilesets_count;
         while (json_peek(stream) != JSON_OBJECT_END && json_get_error(stream) == nullptr) {
             char key[32] = {0};
             const char *value = nullptr;
@@ -252,6 +254,7 @@ asset_parse_subframes(json_stream *const restrict stream, asset_frame_t *const r
         }
         memset(subframe, 0, sizeof(*subframe));
 
+        ++frame->subframes_count;
         while (json_peek(stream) != JSON_OBJECT_END && json_get_error(stream) == nullptr) {
             char key[32] = {0};
 
@@ -338,6 +341,7 @@ asset_parse_frames(json_stream *const restrict stream, asset_desc_t *const restr
         }
         memset(frame, 0, sizeof(*frame));
 
+        ++asset->sheet.frames_count;
         while (json_peek(stream) != JSON_OBJECT_END && json_get_error(stream) == nullptr) {
             const char *key = nullptr;
 
@@ -414,6 +418,7 @@ asset_parse_sheets(json_stream *const restrict stream, assets_t *const restrict 
         }
         memset(asset, 0, sizeof(*asset));
 
+        ++assets->sheets_count;
         while (json_peek(stream) != JSON_OBJECT_END && json_get_error(stream) == nullptr) {
             char key[32] = {0};
             const char *value = nullptr;
@@ -673,6 +678,8 @@ asset_parse_anim_sequence(json_stream *const restrict stream, asset_desc_t *cons
         }
         memset(frame, 0, sizeof(*frame));
 
+        ++asset->anim.sequence_length;
+
         frame->idx = (uint8_t)json_get_number(stream);
         if (asset->anim.sequence == nullptr) {
             asset->anim.sequence = frame;
@@ -728,6 +735,7 @@ asset_parse_anims(json_stream *const restrict stream, assets_t *const restrict a
         }
         memset(asset, 0, sizeof(*asset));
 
+        ++assets->anims_count;
         while (json_peek(stream) != JSON_OBJECT_END && json_get_error(stream) == nullptr) {
             char key[32] = {0};
             const char *value = nullptr;

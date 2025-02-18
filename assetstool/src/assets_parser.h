@@ -66,6 +66,7 @@ typedef struct asset_frame_t asset_frame_t;
 struct asset_frame_t {
     asset_subframe_t *subframes; // Linked list
     asset_frame_t *next;
+    uint8_t subframes_count;
 };
 
 /**
@@ -105,6 +106,7 @@ struct asset_desc_t {
             uint16_t frame_w;                   /**< Sheet frames width */
             uint16_t frame_h;                   /**< Sheet frames height */
             asset_frame_t *frames;              /**< Linked list of frames */
+            uint16_t frames_count;              /**< Total number of frames */
         } sheet;
 
         /* Anim description structure */
@@ -126,17 +128,24 @@ struct asset_desc_t {
             uint8_t rate;                       /**< Anim speed in ticks */
             uint8_t delay;                      /**< Anim starting delay in ticks */
             asset_sequence_idx_t *sequence;     /**< Sequence indexes linked list */
+            uint16_t sequence_length;           /**< Number of frames in the anim */
         } anim;
     };
     asset_desc_t *next;                         /**< Assets linked list */
 };
 
-
+/**
+ * \brief           Assets storage structure
+ */
 typedef struct assets_t {
     asset_desc_t *palettes;
+    uint16_t palettes_count;
     asset_desc_t *tilesets;
+    uint16_t tilesets_count;
     asset_desc_t *sheets;
+    uint16_t sheets_count;
     asset_desc_t *anims;
+    uint16_t anims_count;
 } assets_t;
 
 /**
