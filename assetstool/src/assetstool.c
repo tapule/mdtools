@@ -24,6 +24,7 @@
 #include <sys/types.h>
 #include <unistd.h>
 #include "../libs/lodepng.h"
+#include "utils.h"
 #include "cli_parser.h"
 #include "assets_parser.h"
 
@@ -33,23 +34,27 @@
 
 int
 main(int argc, char **argv) {
-    args_t params = {0};
-    uint32_t tileset_index = 0;
-    DIR *dir;
-    char *file_name;
-    struct dirent *dir_entry;
+    args_t config = {0};
+    assets_t assets;
+    char assets_file[1024] = {0};
 
     /* Argument reading and processing */
-    cli_parse(argc, argv, &params);
-    char path[1024] = {0};
-    strcpy(path, params.input_path);
-    strcat(path, "/");
-    strcat(path, params.input_file);
+    cli_parse(argc, argv, &config);
 
-    assets_t assets;
+    /* Asset json script file parsing */
+    fprintf(stdout, "Parsing assets file...\n");
+    strcpy(assets_file, config.input_path);
+    strcat(assets_file, "/");
+    strcat(assets_file, config.input_file);
+    assets_parse(assets_file, &assets);
 
-    assets_parse(path, &assets);
-    fprintf(stdout, "Processing file %s/%s\n", params.input_path, params.input_file);
+    fprintf(stdout, "Processing assets...\n");
+    if (!config.disable_palettes && assets.palettes != nullptr) {
+        fprintf(stdout, "Palettes: Processing...\n");
+
+    } else {
+        fprintf(stdout, "Paletes processing disabled\n");
+    }
 
 #if 0
     /* First try to open source path as a directory */

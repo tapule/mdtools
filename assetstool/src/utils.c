@@ -14,8 +14,18 @@
 #include "utils.h"
 #include <ctype.h>
 
+inline void
+fprintf_color_set(FILE *const restrict stream, const char *const restrict color) {
+    fprintf(stream, color);
+}
+
+inline void
+fprintf_color_reset(FILE *const restrict stream) {
+    fprintf(stream, PRINT_COLOR_RESET);
+}
+
 void
-utils_str_toupper(char *str) {
+utils_str_toupper(char *const str) {
     char *c;
     c = str;
 
