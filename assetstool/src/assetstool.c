@@ -23,10 +23,12 @@
 #include <string.h>
 #include <sys/types.h>
 #include <unistd.h>
+
 #include "../libs/lodepng.h"
 #include "utils.h"
 #include "cli_parser.h"
 #include "assets_parser.h"
+#include "palettes.h"
 
 #define MAX_TILESETS         512    /* Enough?? */
 #define MAX_FILE_NAME_LENGTH 128    /* Max length for file names */
@@ -51,7 +53,8 @@ main(int argc, char **argv) {
     fprintf(stdout, "Processing assets...\n");
     if (!config.disable_palettes && assets.palettes != nullptr) {
         fprintf(stdout, "Palettes: Processing...\n");
-
+        palettes_process(&config, &assets);
+        fprintf(stdout, "Palettes: Done!\n");
     } else {
         fprintf(stdout, "Paletes processing disabled\n");
     }

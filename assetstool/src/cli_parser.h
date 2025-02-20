@@ -46,6 +46,7 @@ typedef struct args_t {
  * \param[in]       argc: Input arguments counter
  * \param[in]       argv: Input arguments vector
  * \param[out]      args: Where to store the input processed arguments
+ * \note            The execution will be terminated if something went wrong
  */
 void cli_parse(const uint32_t argc, char *const *const argv, args_t *const restrict args);
 

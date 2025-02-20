@@ -16,25 +16,9 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "../libs/pdjson.h"
 #include "assets_parser.h"
-
-/**
- * \brief           Show an error message and exit
- * \param[in]       msg: Error message to show (with optionals arguments)
- * \param[in]       ...: Arguments for error message
- */
-static void
-assets_error(const char *const restrict msg, ...) {
-    if (msg != nullptr) {
-        va_list args;
-        va_start(args);
-        vfprintf(stderr, msg, args);
-        va_end(args);
-        fprintf(stderr, "\n");
-    }
-    exit(EXIT_FAILURE);
-}
+#include "utils.h"
+#include "../libs/pdjson.h"
 
 /**
  * \brief           Parse and extract palette objects from a json stream
@@ -55,19 +39,19 @@ asset_parse_palettes(json_stream *const restrict stream, assets_t *const restric
 
     /* Stream is at the beginning of an array of palette objects */
     if (json_next(stream) != JSON_ARRAY) {
-        assets_error("Error parsing palettes: Array expected on line %d", json_get_lineno(stream));
+        utils_error("Error parsing palettes: Array expected on line %d", json_get_lineno(stream));
     }
 
     while (json_peek(stream) != JSON_ARRAY_END && json_get_error(stream) == nullptr) {
         asset_desc_t *asset = nullptr;
 
         if (json_next(stream) != JSON_OBJECT) {
-            assets_error("Error parsing palettes: Palette object expected on line %d", json_get_lineno(stream));
+            utils_error("Error parsing palettes: Palette object expected on line %d", json_get_lineno(stream));
         }
 
         asset = malloc(sizeof(*asset));
         if (asset == nullptr) {
-            assets_error("Error parsing palettes: Not enought memory available");
+            utils_error("Error parsing palettes: Not enought memory available");
         }
         memset(asset, 0, sizeof(*asset));
 
@@ -77,12 +61,12 @@ asset_parse_palettes(json_stream *const restrict stream, assets_t *const restric
             const char *value = nullptr;
 
             if (json_next(stream) != JSON_STRING) {
-                assets_error("Error parsing palettes: String expected on line %d", json_get_lineno(stream));
+                utils_error("Error parsing palettes: String expected on line %d", json_get_lineno(stream));
             }
             /* We need to keep a copy of current json token string or we'll lost it in the next json_next call */
             strncpy(key, json_get_string(stream, nullptr), 32);
             if (json_next(stream) != JSON_STRING) {
-                assets_error("Error parsing palettes: String expected on line %d", json_get_lineno(stream));
+                utils_error("Error parsing palettes: String expected on line %d", json_get_lineno(stream));
             }
             value = json_get_string(stream, nullptr);
 
@@ -96,7 +80,7 @@ asset_parse_palettes(json_stream *const restrict stream, assets_t *const restric
                 asset->palette.file = strdup(value);
                 continue;
             }
-            assets_error("Error parsing palettes: Unknown key '%s' on line %d", key, json_get_lineno(stream));
+            utils_error("Error parsing palettes: Unknown key '%s' on line %d", key, json_get_lineno(stream));
         }
         /* Validate readed palette */
         if (asset->name != nullptr && asset->palette.file != nullptr) {
@@ -109,7 +93,7 @@ asset_parse_palettes(json_stream *const restrict stream, assets_t *const restric
                 tail = asset;
             }
         } else {
-            assets_error("Error parsing palettes: Invalid palette on line %d", json_get_lineno(stream));
+            utils_error("Error parsing palettes: Invalid palette on line %d", json_get_lineno(stream));
         }
         /* Reads the JSON_OBJECT_END */
         json_next(stream);
@@ -137,19 +121,19 @@ asset_parse_tilesets(json_stream *const restrict stream, assets_t *const restric
     asset_desc_t *tail = nullptr;
 
     if (json_next(stream) != JSON_ARRAY) {
-        assets_error("Error parsing tilesets: Array expected on line %d", json_get_lineno(stream));
+        utils_error("Error parsing tilesets: Array expected on line %d", json_get_lineno(stream));
     }
 
     while (json_peek(stream) != JSON_ARRAY_END && json_get_error(stream) == nullptr) {
         asset_desc_t *asset = nullptr;
 
         if (json_next(stream) != JSON_OBJECT) {
-            assets_error("Error parsing tilesets: Tileset object expected on line %d", json_get_lineno(stream));
+            utils_error("Error parsing tilesets: Tileset object expected on line %d", json_get_lineno(stream));
         }
 
         asset = malloc(sizeof(*asset));
         if (asset == nullptr) {
-            assets_error("Error parsing tilesets: Not enought memory available");
+            utils_error("Error parsing tilesets: Not enought memory available");
         }
         memset(asset, 0, sizeof(*asset));
 
@@ -159,12 +143,12 @@ asset_parse_tilesets(json_stream *const restrict stream, assets_t *const restric
             const char *value = nullptr;
 
             if (json_next(stream) != JSON_STRING) {
-                assets_error("Error parsing tilesets: String expected on line %d", json_get_lineno(stream));
+                utils_error("Error parsing tilesets: String expected on line %d", json_get_lineno(stream));
             }
 
             strncpy(key, json_get_string(stream, nullptr), 32);
             if (json_next(stream) != JSON_STRING) {
-                assets_error("Error parsing tilesets: String expected on line %d", json_get_lineno(stream));
+                utils_error("Error parsing tilesets: String expected on line %d", json_get_lineno(stream));
             }
             value = json_get_string(stream, nullptr);
 
@@ -194,10 +178,10 @@ asset_parse_tilesets(json_stream *const restrict stream, assets_t *const restric
                     asset->tileset.compression = ASSET_COMPRESSION_SLZ;
                     continue;
                 }
-                assets_error("Error parsing tilesets: Unknown compression type '%s' on line %d", value,
+                utils_error("Error parsing tilesets: Unknown compression type '%s' on line %d", value,
                              json_get_lineno(stream));
             }
-            assets_error("Error parsing tilesets: Unknown key '%s' on line %d", key, json_get_lineno(stream));
+            utils_error("Error parsing tilesets: Unknown key '%s' on line %d", key, json_get_lineno(stream));
         }
         /* Validate readed tileset */
         if (asset->name != nullptr && asset->tileset.file != nullptr) {
@@ -209,7 +193,7 @@ asset_parse_tilesets(json_stream *const restrict stream, assets_t *const restric
                 tail = asset;
             }
         } else {
-            assets_error("Error parsing tilesets: Invalid tileset on line %d", json_get_lineno(stream));
+            utils_error("Error parsing tilesets: Invalid tileset on line %d", json_get_lineno(stream));
         }
         /* Reads the JSON_OBJECT_END */
         json_next(stream);
@@ -238,19 +222,19 @@ asset_parse_subframes(json_stream *const restrict stream, asset_frame_t *const r
     asset_subframe_t *tail = nullptr;
 
     if (json_next(stream) != JSON_ARRAY) {
-        assets_error("Error parsing subframes: Unknown json file format");
+        utils_error("Error parsing subframes: Unknown json file format");
     }
 
     while (json_peek(stream) != JSON_ARRAY_END && json_get_error(stream) == nullptr) {
         asset_subframe_t *subframe = nullptr;
 
         if (json_next(stream) != JSON_OBJECT) {
-            assets_error("Error parsing subframes: Subframe object expected on line %d", json_get_lineno(stream));
+            utils_error("Error parsing subframes: Subframe object expected on line %d", json_get_lineno(stream));
         }
 
         subframe = malloc(sizeof(*subframe));
         if (subframe == nullptr) {
-            assets_error("Error parsing subframe: Not enought memory available");
+            utils_error("Error parsing subframe: Not enought memory available");
         }
         memset(subframe, 0, sizeof(*subframe));
 
@@ -260,13 +244,13 @@ asset_parse_subframes(json_stream *const restrict stream, asset_frame_t *const r
 
             /* Item name string */
             if (json_next(stream) != JSON_STRING) {
-                assets_error("Error parsing frames: String expected on line %d", json_get_lineno(stream));
+                utils_error("Error parsing frames: String expected on line %d", json_get_lineno(stream));
             }
             strncpy(key, json_get_string(stream, nullptr), 32);
 
             /* Item value stored in the json stream state */
             if (json_next(stream) != JSON_NUMBER) {
-                assets_error("Error parsing subframe: Number expected on line %d", json_get_lineno(stream));
+                utils_error("Error parsing subframe: Number expected on line %d", json_get_lineno(stream));
             }
 
             /* Check subframe fields */
@@ -286,7 +270,7 @@ asset_parse_subframes(json_stream *const restrict stream, asset_frame_t *const r
                 subframe->h = (uint8_t) json_get_number(stream);
                 continue;
             }
-            assets_error("Error parsing subframe: Unknown key '%s' on line %d", key, json_get_lineno(stream));
+            utils_error("Error parsing subframe: Unknown key '%s' on line %d", key, json_get_lineno(stream));
         }
         /* Validate readed subframe */
         if (subframe->w > 0 && subframe->w < 5 && subframe->h > 0 && subframe->h < 5) {
@@ -298,7 +282,7 @@ asset_parse_subframes(json_stream *const restrict stream, asset_frame_t *const r
                 tail = subframe;
             }
         } else {
-            assets_error("Error parsing subframes: Invalid subframe on line %d", json_get_lineno(stream));
+            utils_error("Error parsing subframes: Invalid subframe on line %d", json_get_lineno(stream));
         }
         /* Reads the JSON_OBJECT_END */
         json_next(stream);
@@ -325,19 +309,19 @@ asset_parse_frames(json_stream *const restrict stream, asset_desc_t *const restr
     asset_frame_t *tail = nullptr;
 
     if (json_next(stream) != JSON_ARRAY) {
-        assets_error("Error parsing frames: Unknown json file format");
+        utils_error("Error parsing frames: Unknown json file format");
     }
 
     while (json_peek(stream) != JSON_ARRAY_END && json_get_error(stream) == nullptr) {
         asset_frame_t *frame = nullptr;
 
         if (json_next(stream) != JSON_OBJECT) {
-            assets_error("Error parsing frames: Frame object expected on line %d", json_get_lineno(stream));
+            utils_error("Error parsing frames: Frame object expected on line %d", json_get_lineno(stream));
         }
 
         frame = malloc(sizeof(*frame));
         if (frame == nullptr) {
-            assets_error("Error parsing frame: Not enought memory available");
+            utils_error("Error parsing frame: Not enought memory available");
         }
         memset(frame, 0, sizeof(*frame));
 
@@ -347,7 +331,7 @@ asset_parse_frames(json_stream *const restrict stream, asset_desc_t *const restr
 
             /* Item name string */
             if (json_next(stream) != JSON_STRING) {
-                assets_error("Error parsing frames: String expected on line %d", json_get_lineno(stream));
+                utils_error("Error parsing frames: String expected on line %d", json_get_lineno(stream));
             }
             key = json_get_string(stream, nullptr);
 
@@ -356,7 +340,7 @@ asset_parse_frames(json_stream *const restrict stream, asset_desc_t *const restr
                 asset_parse_subframes(stream, frame);
                 continue;
             }
-            assets_error("Error parsing frames: Unknown key '%s' on line %d", key, json_get_lineno(stream));
+            utils_error("Error parsing frames: Unknown key '%s' on line %d", key, json_get_lineno(stream));
         }
         /* Validate readed frame */
         if (frame->subframes != nullptr) {
@@ -368,7 +352,7 @@ asset_parse_frames(json_stream *const restrict stream, asset_desc_t *const restr
                 tail = frame;
             }
         } else {
-            assets_error("Error parsing frames: Invalid frame on line %d", json_get_lineno(stream));
+            utils_error("Error parsing frames: Invalid frame on line %d", json_get_lineno(stream));
         }
         /* Reads the JSON_OBJECT_END */
         json_next(stream);
@@ -402,19 +386,19 @@ asset_parse_sheets(json_stream *const restrict stream, assets_t *const restrict 
     asset_desc_t *tail = nullptr;
 
     if (json_next(stream) != JSON_ARRAY) {
-        assets_error("Error parsing sheets: Array expected on line %d", json_get_lineno(stream));
+        utils_error("Error parsing sheets: Array expected on line %d", json_get_lineno(stream));
     }
 
     while (json_peek(stream) != JSON_ARRAY_END && json_get_error(stream) == nullptr) {
         asset_desc_t *asset = nullptr;
 
         if (json_next(stream) != JSON_OBJECT) {
-            assets_error("Error parsing sheets: Sheet object expected on line %d", json_get_lineno(stream));
+            utils_error("Error parsing sheets: Sheet object expected on line %d", json_get_lineno(stream));
         }
 
         asset = malloc(sizeof(*asset));
         if (asset == nullptr) {
-            assets_error("Error parsing sheets: Not enought memory available");
+            utils_error("Error parsing sheets: Not enought memory available");
         }
         memset(asset, 0, sizeof(*asset));
 
@@ -426,7 +410,7 @@ asset_parse_sheets(json_stream *const restrict stream, assets_t *const restrict 
 
             /* Item name string */
             if (json_next(stream) != JSON_STRING) {
-                assets_error("Error parsing sheets: String expected on line %d", json_get_lineno(stream));
+                utils_error("Error parsing sheets: String expected on line %d", json_get_lineno(stream));
             }
             strncpy(key, json_get_string(stream, nullptr), 32);
 
@@ -466,7 +450,7 @@ asset_parse_sheets(json_stream *const restrict stream, assets_t *const restrict 
                         asset->sheet.compression = ASSET_COMPRESSION_SLZ;
                         continue;
                     }
-                    assets_error("Error parsing sheets: Unknown compression type '%s' on line %d", value,
+                    utils_error("Error parsing sheets: Unknown compression type '%s' on line %d", value,
                                  json_get_lineno(stream));
                 }
 
@@ -480,7 +464,7 @@ asset_parse_sheets(json_stream *const restrict stream, assets_t *const restrict 
                         asset->sheet.type = ASSET_SHEET_TYPE_DYNAMIC;
                         continue;
                     }
-                    assets_error("Error parsing sheets: Unknown type '%s' on line %d", value, json_get_lineno(stream));
+                    utils_error("Error parsing sheets: Unknown type '%s' on line %d", value, json_get_lineno(stream));
                 }
 
                 if (strcmp(key, "layout") == 0) {
@@ -493,10 +477,10 @@ asset_parse_sheets(json_stream *const restrict stream, assets_t *const restrict 
                         asset->sheet.layout = ASSET_SHEET_LAYOUT_TILEMAP;
                         continue;
                     }
-                    assets_error("Error parsing sheets: Unknown layout '%s' on line %d", value,
+                    utils_error("Error parsing sheets: Unknown layout '%s' on line %d", value,
                                  json_get_lineno(stream));
                 }
-                assets_error("Error parsing sheets: Unknown key '%s' on line %d", key, json_get_lineno(stream));
+                utils_error("Error parsing sheets: Unknown key '%s' on line %d", key, json_get_lineno(stream));
             }
 
             if (items_type == JSON_NUMBER) {
@@ -509,9 +493,9 @@ asset_parse_sheets(json_stream *const restrict stream, assets_t *const restrict 
                     asset->sheet.frame_h = (uint16_t) json_get_number(stream);
                     continue;
                 }
-                assets_error("Error parsing sheets: Unknown key '%s' on line %d", key, json_get_lineno(stream));
+                utils_error("Error parsing sheets: Unknown key '%s' on line %d", key, json_get_lineno(stream));
             }
-            assets_error("Error parsing sheets: Unknown key '%s' on line %d", key, json_get_lineno(stream));
+            utils_error("Error parsing sheets: Unknown key '%s' on line %d", key, json_get_lineno(stream));
         }
         /* Validate readed sheet */
         if (asset->name != nullptr && asset->sheet.file != nullptr && asset->sheet.frame_w > 0
@@ -525,7 +509,7 @@ asset_parse_sheets(json_stream *const restrict stream, assets_t *const restrict 
                 tail = asset;
             }
         } else {
-            assets_error("Error parsing sheets: Invalid sheet on line %d", json_get_lineno(stream));
+            utils_error("Error parsing sheets: Invalid sheet on line %d", json_get_lineno(stream));
         }
         /* Reads the JSON_OBJECT_END */
         json_next(stream);
@@ -549,7 +533,7 @@ asset_parse_sheets(json_stream *const restrict stream, assets_t *const restrict 
 static void
 asset_parse_anim_pivot(json_stream *const restrict stream, asset_desc_t *const restrict asset) {
     if (json_next(stream) != JSON_OBJECT) {
-        assets_error("Error parsing anim pivot: Subframe object expected on line %d", json_get_lineno(stream));
+        utils_error("Error parsing anim pivot: Subframe object expected on line %d", json_get_lineno(stream));
     }
 
     while (json_peek(stream) != JSON_OBJECT_END && json_get_error(stream) == nullptr) {
@@ -557,13 +541,13 @@ asset_parse_anim_pivot(json_stream *const restrict stream, asset_desc_t *const r
 
         /* Item name string */
         if (json_next(stream) != JSON_STRING) {
-            assets_error("Error parsing anim pivot: String expected on line %d", json_get_lineno(stream));
+            utils_error("Error parsing anim pivot: String expected on line %d", json_get_lineno(stream));
         }
         strncpy(key, json_get_string(stream, nullptr), 32);
 
         /* Item value stored in the json stream state */
         if (json_next(stream) != JSON_NUMBER) {
-            assets_error("Error parsing anim pivot: Number expected on line %d", json_get_lineno(stream));
+            utils_error("Error parsing anim pivot: Number expected on line %d", json_get_lineno(stream));
         }
 
         /* Check pivot fields */
@@ -575,7 +559,7 @@ asset_parse_anim_pivot(json_stream *const restrict stream, asset_desc_t *const r
             asset->anim.pivot.y = (uint8_t) json_get_number(stream);
             continue;
         }
-        assets_error("Error parsing anim pivot: Unknown key '%s' on line %d", key, json_get_lineno(stream));
+        utils_error("Error parsing anim pivot: Unknown key '%s' on line %d", key, json_get_lineno(stream));
     }
     /* Reads the JSON_OBJECT_END */
     json_next(stream);
@@ -598,17 +582,17 @@ asset_parse_anim_pivot(json_stream *const restrict stream, asset_desc_t *const r
 static void
 asset_parse_anim_properties(json_stream *const restrict stream, asset_desc_t *const restrict asset) {
     if (json_next(stream) != JSON_OBJECT) {
-        assets_error("Error parsing anim properties: Object expected on line %d", json_get_lineno(stream));
+        utils_error("Error parsing anim properties: Object expected on line %d", json_get_lineno(stream));
     }
 
     while (json_peek(stream) != JSON_OBJECT_END && json_get_error(stream) == nullptr) {
         char key[32] = {0};
-        bool val;
+        bool val = false;
         enum json_type items_type;
 
         /* Item name string */
         if (json_next(stream) != JSON_STRING) {
-            assets_error("Error parsing anim properties: String expected on line %d", json_get_lineno(stream));
+            utils_error("Error parsing anim properties: String expected on line %d", json_get_lineno(stream));
         }
         strncpy(key, json_get_string(stream, nullptr), 32);
 
@@ -619,7 +603,7 @@ asset_parse_anim_properties(json_stream *const restrict stream, asset_desc_t *co
         } else if (items_type == JSON_FALSE) {
             val = false;
         } else {
-            assets_error("Error parsing anim properties: Boolean expected on line %d", json_get_lineno(stream));
+            utils_error("Error parsing anim properties: Boolean expected on line %d", json_get_lineno(stream));
         }
 
         if (strcmp(key, "loop") == 0) {
@@ -638,7 +622,7 @@ asset_parse_anim_properties(json_stream *const restrict stream, asset_desc_t *co
             asset->anim.properties.hide = val;
             continue;
         }
-        assets_error("Error parsing anim properties: Unknown key '%s' on line %d", key, json_get_lineno(stream));
+        utils_error("Error parsing anim properties: Unknown key '%s' on line %d", key, json_get_lineno(stream));
     }
     /* Reads the JSON_OBJECT_END */
     json_next(stream);
@@ -662,19 +646,19 @@ asset_parse_anim_sequence(json_stream *const restrict stream, asset_desc_t *cons
     asset_sequence_idx_t *tail = nullptr;
 
     if (json_next(stream) != JSON_ARRAY) {
-        assets_error("Error parsing anim sequence: Unknown json file format");
+        utils_error("Error parsing anim sequence: Unknown json file format");
     }
 
     while (json_peek(stream) != JSON_ARRAY_END && json_get_error(stream) == nullptr) {
         asset_sequence_idx_t *frame = nullptr;
 
         if (json_next(stream) != JSON_NUMBER) {
-            assets_error("Error parsing anim sequence: Frame index expected on line %d", json_get_lineno(stream));
+            utils_error("Error parsing anim sequence: Frame index expected on line %d", json_get_lineno(stream));
         }
 
         frame = malloc(sizeof(*frame));
         if (frame == nullptr) {
-            assets_error("Error parsing anim sequence: Not enought memory available");
+            utils_error("Error parsing anim sequence: Not enought memory available");
         }
         memset(frame, 0, sizeof(*frame));
 
@@ -719,19 +703,19 @@ asset_parse_anims(json_stream *const restrict stream, assets_t *const restrict a
     asset_desc_t *tail = nullptr;
 
     if (json_next(stream) != JSON_ARRAY) {
-        assets_error("Error parsing anims: Array expected on line %d", json_get_lineno(stream));
+        utils_error("Error parsing anims: Array expected on line %d", json_get_lineno(stream));
     }
 
     while (json_peek(stream) != JSON_ARRAY_END && json_get_error(stream) == nullptr) {
         asset_desc_t *asset = nullptr;
 
         if (json_next(stream) != JSON_OBJECT) {
-            assets_error("Error parsing anims: Anim object expected on line %d", json_get_lineno(stream));
+            utils_error("Error parsing anims: Anim object expected on line %d", json_get_lineno(stream));
         }
 
         asset = malloc(sizeof(*asset));
         if (asset == nullptr) {
-            assets_error("Error parsing anims: Not enought memory available");
+            utils_error("Error parsing anims: Not enought memory available");
         }
         memset(asset, 0, sizeof(*asset));
 
@@ -743,7 +727,7 @@ asset_parse_anims(json_stream *const restrict stream, assets_t *const restrict a
 
             /* Item name string */
             if (json_next(stream) != JSON_STRING) {
-                assets_error("Error parsing anims: String expected on line %d", json_get_lineno(stream));
+                utils_error("Error parsing anims: String expected on line %d", json_get_lineno(stream));
             }
             strncpy(key, json_get_string(stream, nullptr), 32);
 
@@ -776,7 +760,7 @@ asset_parse_anims(json_stream *const restrict stream, assets_t *const restrict a
                     asset->anim.sheet = strdup(value);
                     continue;
                 }
-                assets_error("Error parsing anims: Unknown key '%s' on line %d", key, json_get_lineno(stream));
+                utils_error("Error parsing anims: Unknown key '%s' on line %d", key, json_get_lineno(stream));
             }
 
             if (items_type == JSON_NUMBER) {
@@ -789,9 +773,9 @@ asset_parse_anims(json_stream *const restrict stream, assets_t *const restrict a
                     asset->anim.delay = (uint8_t) json_get_number(stream);
                     continue;
                 }
-                assets_error("Error parsing anims: Unknown key '%s' on line %d", key, json_get_lineno(stream));
+                utils_error("Error parsing anims: Unknown key '%s' on line %d", key, json_get_lineno(stream));
             }
-            assets_error("Error parsing anims: Unknown key '%s' on line %d", key, json_get_lineno(stream));
+            utils_error("Error parsing anims: Unknown key '%s' on line %d", key, json_get_lineno(stream));
         }
         /* Validate readed anim */
         if (asset->name != nullptr && asset->anim.sheet != nullptr && asset->anim.rate > 0) {
@@ -803,7 +787,7 @@ asset_parse_anims(json_stream *const restrict stream, assets_t *const restrict a
                 tail = asset;
             }
         } else {
-            assets_error("Error parsing anims: Invalid anim on line %d", json_get_lineno(stream));
+            utils_error("Error parsing anims: Invalid anim on line %d", json_get_lineno(stream));
         }
         /* Reads the JSON_OBJECT_END */
         json_next(stream);
@@ -818,26 +802,26 @@ assets_parse(const char *const restrict path, assets_t *const restrict assets) {
     json_stream stream;
 
     if (path == nullptr || assets == nullptr) {
-        assets_error("Error parsing assets: Invalid arguments");
+        utils_error("Error parsing assets: Invalid arguments");
     }
 
     memset(assets, 0, sizeof(*assets));
 
     json_file = fopen(path, "r");
     if (json_file == nullptr) {
-        assets_error("Error parsing assets: Can't open file '%s'", path);
+        utils_error("Error parsing assets: Can't open file '%s'", path);
     }
 
     json_open_stream(&stream, json_file);
     if (json_next(&stream) != JSON_OBJECT) {
-        assets_error("Error parsing assets: Unknown json file format '%s'", path);
+        utils_error("Error parsing assets: Unknown json file format '%s'", path);
     }
 
     while (json_peek(&stream) != JSON_OBJECT_END && json_get_error(&stream) == nullptr) {
         const char *key = nullptr;
 
         if (json_next(&stream) != JSON_STRING) {
-            assets_error("Error parsing assets: Unknown json file format '%s'", path);
+            utils_error("Error parsing assets: Unknown json file format '%s'", path);
         }
         key = json_get_string(&stream, nullptr);
         if (strcmp(key, "palettes") == 0) {
@@ -860,7 +844,7 @@ assets_parse(const char *const restrict path, assets_t *const restrict assets) {
             continue;
         }
 
-        assets_error("Error parsing assets: Unknown json string '%s'", key);
+        utils_error("Error parsing assets: Unknown json string '%s'", key);
     }
 
     json_close(&stream);

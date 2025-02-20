@@ -165,6 +165,7 @@ typedef struct assets_t {
  *
  * \param[in, out]  path: Assets json file path
  * \param[in, out]  assets: Assets structure containing parsed assets
+ * \note            The execution will be terminated if something went wrong
  */
 void assets_parse(const char *const restrict path, assets_t *const restrict assets);
 

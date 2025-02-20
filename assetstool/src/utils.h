@@ -47,6 +47,13 @@ void fprintf_color_set(FILE *const restrict stream, const char *const restrict c
 void fprintf_color_reset(FILE *const restrict stream);
 
 /**
+ * \brief           Show an error message and exit
+ * \param[in]       msg: Error message to show (with optionals arguments)
+ * \param[in]       ...: Arguments for error message
+ */
+void utils_error(const char *const restrict msg, ...);
+
+/**
  * \brief           Convert a string to upper case
  * \param[in,out]   str: String to convert
  */

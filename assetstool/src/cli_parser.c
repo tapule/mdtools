@@ -18,6 +18,7 @@
 #include <sys/stat.h>
 
 #include "cli_parser.h"
+#include "utils.h"
 
 /**
  * \brief           Assetstool version information
@@ -80,25 +81,6 @@ cli_usage(const char *const restrict app, const int exit_code, const char *const
 }
 
 /**
- * \brief           Show an error message and exit
- * \param[in]       app: App name
- * \param[in]       msg: Error message to show (with optionals arguments)
- * \param[in]       ...: Arguments for error message
- */
-static void
-cli_error(const char *const restrict app, const char *const restrict msg, ...) {
-    if (msg != nullptr) {
-        va_list args;
-        va_start(args);
-        fprintf(stderr, "%s:\n", app);
-        vfprintf(stderr, msg, args);
-        va_end(args);
-        fprintf(stderr, "\n");
-    }
-    exit(EXIT_FAILURE);
-}
-
-/**
  * \brief           Check and ajust input and output paths as needed
  * \param[in]       app: App name
  * \param[in]       reason: Error message to show (with optionals arguments)
@@ -114,7 +96,7 @@ cli_paths_adjust(const char *const restrict app, args_t *const restrict args) {
 
     /* Check and adjust input path and source file name */
     if (stat(args->input_path, &stat_buff) == -1) {
-        cli_error(app, "Error: Opening input path '%s'", args->input_path);
+        utils_error("Error: Opening input path '%s'", args->input_path);
     }
     if (S_ISDIR(stat_buff.st_mode)) {
         args->input_file = CLI_DEFAULT_INPUT_FILE;
@@ -130,7 +112,7 @@ cli_paths_adjust(const char *const restrict app, args_t *const restrict args) {
 
     /* Check output path */
     if (stat(args->output_path, &stat_buff) == -1) {
-        cli_error(app, "Error: Opening output path '%s'", args->output_path);
+        utils_error("Error: Opening output path '%s'", args->output_path);
     }
     if (S_ISDIR(stat_buff.st_mode) == 0) {
         cli_usage(app, EXIT_FAILURE, "Error: Output path must be a directory '%s'", args->output_path);
