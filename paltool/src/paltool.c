@@ -61,7 +61,7 @@
 #include "lodepng.h"
 
 #define MAX_PALETTES            512		/* Who needs more?? */
-#define MAX_COLORS              64      /* Max colors in a Megadrive palete */
+#define MAX_COLORS              64      /* Max colors in a Megadrive palette */
 #define MAX_FILE_NAME_LENGTH    128     /* Max length for file names */
 #define MAX_PATH_LENGTH         1024    /* Max length for paths */
 
@@ -212,7 +212,7 @@ uint8_t parse_params(uint32_t argc, char** argv, args_t *params)
 }
 
 /**
- * @brief Processes a png file and convert its palete to Megadrive format
+ * @brief Processes a png file and convert its palette to Megadrive format
  *
  * @param path File path
  * @param file Png file to process

@@ -24,9 +24,9 @@ extern "C" {
  * \brief           Available assets compression types
  */
 typedef enum asset_compression_t {
-    ASSET_COMPRESSION_NONE = 0, /**< No compression */
-    ASSET_COMPRESSION_ZX0,      /**< ZX0/Salvador compression */
-    ASSET_COMPRESSION_SLZ       /**< Sik's SLZ compression */
+    ASSET_COMPRESSION_NONE = 0b00,  /**< No compression */
+    ASSET_COMPRESSION_ZX0  = 0b01,  /**< ZX0/Salvador compression */
+    ASSET_COMPRESSION_SLZ  = 0b10   /**< Sik's SLZ compression */
 } asset_compression_t;
 
 

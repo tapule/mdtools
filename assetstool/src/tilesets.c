@@ -7,8 +7,8 @@
  */
 
 /**
- * \file            palettes.c
- * \brief           Palettes processing functions
+ * \file            tilesets.c
+ * \brief           Tilesets processing functions
  */
 
 #include <stdio.h>
@@ -16,21 +16,22 @@
 #include <string.h>
 
 #include "../libs/lodepng.h"
-#include "palettes.h"
+#include "tilesets.h"
 #include "utils.h"
+#include "img4bpp.h"
 
-#define PALETTE_MAX_COLORS          (64)   /* Max colors in a Megadrive palette */
-#define PALETTE_MAX_PATH_LENGTH     (1024) /* Max length for palettes paths */
-#define PALETTE_MAX_COLORS_PER_LINE (8)    /* Number of color per line to write in source file */
+#define TILESET_MAX_TILES       (2048) /* Max tiles in a Megadrive tileset */
+#define TILESET_MAX_PATH_LENGTH (1024) /* Max length for tilesets paths */
 
 /**
- * \brief           Stores palette's data
+ * \brief           Stores tileset's data
  */
-typedef struct palette_t {
-    asset_desc_t *asset;                 /**< Original palette asset description */
-    uint16_t colors[PALETTE_MAX_COLORS]; /**< Palette color storage */
-    uint8_t size;                        /**< Palette's size in colors */
-} palette_t;
+typedef struct tileset_t {
+    asset_desc_t *asset; /**< Original tileset asset description */
+    uint8_t *tiles;      /**< Tiles storage */
+    uint16_t size;       /**< Tileset's size in tiles */
+} tileset_t;
+
 
 /**
  * \brief           Read a png file and convert its palette to Megadrive format
@@ -39,12 +40,13 @@ typedef struct palette_t {
  * \return          true on success, false otherwise
  */
 static bool
-palette_read(const char *const restrict path, palette_t *const restrict pal) {
+tileset_read(const char *const restrict path, tileset_t *const restrict tileset) {
     uint32_t error;
     LodePNGState png_state;
     size_t png_size;
     uint8_t *png_data = nullptr;
     uint8_t *img_data = nullptr;
+    uint8_t *img_4bpp = nullptr;
     uint32_t img_width;
     uint32_t img_height;
 
@@ -52,7 +54,7 @@ palette_read(const char *const restrict path, palette_t *const restrict pal) {
     error = lodepng_load_file(&png_data, &png_size, path);
     if (error) {
         free(png_data);
-        fprintf(stderr, "Palettes: Error processing %s: %s\n", pal->asset->name, lodepng_error_text(error));
+        fprintf(stderr, "Tilesets: Error processing %s: %s\n", tileset->asset->name, lodepng_error_text(error));
         return false;
     }
     lodepng_state_init(&png_state);
@@ -60,44 +62,63 @@ palette_read(const char *const restrict path, palette_t *const restrict pal) {
     /* Decode our png image and free unneded resources */
     error = lodepng_decode(&img_data, &img_width, &img_height, &png_state, png_data, png_size);
     free(png_data);
-    free(img_data);
     /* Checks for errors in the decode stage */
     if (error) {
-        fprintf(stderr, "Palettes: Error processing %s: %s\n", pal->asset->name, lodepng_error_text(error));
+        fprintf(stderr, "Tilesets: Error processing %s: %s\n", tileset->asset->name, lodepng_error_text(error));
         return false;
     }
     /* Checks if the image is an indexed one */
     if (png_state.info_raw.colortype != LCT_PALETTE) {
-        fprintf(stderr, "Palettes: Error processing %s: Image must be in indexed color mode\n", pal->asset->name);
+        fprintf(stderr, "Tilesets: Error processing %s: Image must be in indexed color mode\n", tileset->asset->name);
         return false;
     }
 
-    /* Read a maximum of 64 colors */
-    pal->size = png_state.info_png.color.palettesize > PALETTE_MAX_COLORS ? PALETTE_MAX_COLORS
-                                                                          : png_state.info_png.color.palettesize;
-
-    /* Do the conversion to a Sega Megadrive/Genesis palette */
-    for (uint8_t i = 0; i < pal->size; ++i) {
-        uint8_t r_component;
-        uint8_t g_component;
-        uint8_t b_component;
-
-        /* Read the color components from the png palette */
-        r_component = png_state.info_png.color.palette[(i * 4) + 0];
-        g_component = png_state.info_png.color.palette[(i * 4) + 1];
-        b_component = png_state.info_png.color.palette[(i * 4) + 2];
-
-        /*
-            Convert color components to Sega Megadrive/Genesis format:
-                000 BBB0 GGG0 RRR0
-            9bits: 3bits of blue, 3bits of green, 3bits of red (inverse order)
-        */
-        r_component = (r_component >> 4) & 0xE;
-        g_component = (g_component >> 4) & 0xE;
-        b_component = (b_component >> 4) & 0xE;
-
-        pal->colors[i] = (r_component << 0) | (g_component << 4) | (b_component << 8);
+    /* Checks if the image is a 4bpp or 8bpp one */
+    if (png_state.info_png.color.bitdepth != 4 && png_state.info_png.color.bitdepth != 8) {
+        fprintf(stderr, "Tilesets: Error processing %s: Image must be 4bpp or 8bpp\n", tileset->asset->name);
+        return false;
     }
+
+    /* Checks if the image has more than 16 colors */
+    if (png_state.info_png.color.palettesize > 16) {
+        fprintf(stderr, "Tilesets: Error processing %s: Image has more than 16 colors\n", tileset->asset->name);
+        return false;
+    }
+
+    /* Checks if image width is multiple of 8 */
+    if (img_width % 8) {
+        fprintf(stderr, "Tilesets: Error processing %s: Image width is not multiple of 8\n", tileset->asset->name);
+        return false;
+    }
+
+    /* Checks if image height is multiple of 8 */
+    if (img_height % 8) {
+        fprintf(stderr, "Tilesets: Error processing %s: Image height is not multiple of 8\n", tileset->asset->name);
+        return false;
+    }
+
+    /* Converts the image to Megadrive 4bpp format if it is 8bpp */
+    img_4bpp = img_data;
+    if (png_state.info_png.color.bitdepth == 8) {
+        img_4bpp = img4bpp_from_8bpp(img_data, img_width * img_width);
+        free(img_data);
+
+        if (img_4bpp == nullptr) {
+            fprintf(stderr, "Tilesets: Error processing %s: Unable to convert image to 4bpp\n", tileset->asset->name);
+            return false;
+        }
+    }
+
+    /* Extract the tileset from our 4bpp image data */
+    tileset->tiles = img4bpp_extract_tiles(img_4bpp, img_width, img_height);
+    free(img_4bpp);
+    if (tileset->tiles == nullptr) {
+        fprintf(stderr, "Tilesets: Error processing %s: Unable to extract tiles from image\n", tileset->asset->name);
+        return false;
+    }
+
+    /* Set the number of tiles in the tileset */
+    tileset->size = (img_width / 8) * (img_height / 8);
 
     return true;
 }
@@ -110,11 +131,11 @@ palette_read(const char *const restrict path, palette_t *const restrict pal) {
  * \return          true if everythig was correct, false otherwise
  */
 static bool
-palettes_build_header(const char *const restrict path, palette_t *const restrict palettes,
-                      const uint16_t palettes_count) {
+tilesets_build_header(const char *const restrict path, tileset_t *const restrict tilesets,
+                      const uint16_t tilesets_count) {
     FILE *h_file;
-    char file_path[PALETTE_MAX_PATH_LENGTH];
-
+    char file_path[TILESET_MAX_PATH_LENGTH];
+#if 0
     /* Builds the .h complete file path */
     strcpy(file_path, path);
     strcat(file_path, "/");
@@ -167,6 +188,7 @@ palettes_build_header(const char *const restrict path, palette_t *const restrict
     fprintf(h_file, "#endif /* ASSETS_PALETTES_H */\n");
 
     fclose(h_file);
+#endif
     return true;
 }
 
@@ -178,11 +200,11 @@ palettes_build_header(const char *const restrict path, palette_t *const restrict
  * \return          true if everythig was correct, false otherwise
  */
 static bool
-palettes_build_source(const char *const restrict path, palette_t *const restrict palettes,
-                      const uint16_t palettes_count) {
+tilesets_build_source(const char *const restrict path, tileset_t *const restrict tileset,
+                      const uint16_t tilesets_count) {
     FILE *c_file;
-    char file_path[PALETTE_MAX_PATH_LENGTH];
-
+    char file_path[TILESET_MAX_PATH_LENGTH];
+#if 0
     /* Builds the .c complete file path */
     strcpy(file_path, path);
     strcat(file_path, "/");
@@ -224,47 +246,57 @@ palettes_build_source(const char *const restrict path, palette_t *const restrict
     }
 
     fclose(c_file);
+#endif
     return true;
 }
 
+static void
+tilesets_free(tileset_t *const restrict tilesets, const uint16_t tilesets_count) {
+    for (uint16_t i = 0; i < tilesets_count; ++i) {
+        if (tilesets[i].tiles != nullptr) {
+            free(tilesets[i].tiles);
+        }
+    }
+}
+
 void
-palettes_process(args_t *const restrict config, assets_t *const restrict assets) {
-    palette_t *palettes = nullptr;
+tilesets_process(args_t *const restrict config, assets_t *const restrict assets) {
+    tileset_t *tilesets = nullptr;
     asset_desc_t *current = nullptr;
-    char file_path[PALETTE_MAX_PATH_LENGTH] = {0};
+    char file_path[TILESET_MAX_PATH_LENGTH] = {0};
 
-    if (config == nullptr || assets == nullptr || assets->palettes == nullptr) {
-        utils_error("Error processing palettes: Invalid arguments");
+    if (config == nullptr || assets == nullptr || assets->tilesets == nullptr) {
+        utils_error("Error processing tilesets: Invalid arguments");
     }
 
-    palettes = malloc(sizeof(*palettes) * assets->palettes_count);
-    if (palettes == nullptr) {
-        utils_error("Error processing palettes: Not enought memory available");
+    tilesets = malloc(sizeof(*tilesets) * assets->tilesets_count);
+    if (tilesets == nullptr) {
+        utils_error("Error processing tilesets: Not enought memory available");
     }
-    memset(palettes, 0, sizeof(*palettes) * assets->palettes_count);
+    memset(tilesets, 0, sizeof(*tilesets) * assets->tilesets_count);
 
-    current = assets->palettes;
-    for (uint16_t i = 0; i < assets->palettes_count; ++i) {
-        printf("Palettes: Processing %s\n", current->name);
+    current = assets->tilesets;
+    for (uint16_t i = 0; i < assets->tilesets_count; ++i) {
+        printf("Tilesets: Processing %s\n", current->name);
 
         /* Builds the complete file path */
         strcpy(file_path, config->input_path);
         strcat(file_path, "/");
-        strcat(file_path, current->palette.file);
-        palettes[i].asset = current;
-        if (!palette_read(file_path, &palettes[i])) {
-            free(palettes);
-            utils_error("Palettes: Error processing palette %d of %d, stopping", i + 1, assets->palettes_count);
+        strcat(file_path, current->tileset.file);
+        tilesets[i].asset = current;
+        if (!tileset_read(file_path, &tilesets[i])) {
+            tilesets_free(tilesets, assets->tilesets_count);
+            utils_error("Tilesets: Error processing tileset %d of %d, stopping", i + 1, assets->tilesets_count);
         }
         current = current->next;
     }
-    if (!palettes_build_header(config->output_path, palettes, assets->palettes_count)) {
-        free(palettes);
-        utils_error("Palettes: Error building %s/palettes.h", config->output_path);
+    if (!tilesets_build_header(config->output_path, tilesets, assets->tilesets_count)) {
+        tilesets_free(tilesets, assets->tilesets_count);
+        utils_error("Tilesets: Error building %s/tilesets.h", config->output_path);
     }
-    if (!palettes_build_source(config->output_path, palettes, assets->palettes_count)) {
-        free(palettes);
-        utils_error("Palettes: Error building %s/palettes.c", config->output_path);
+    if (!tilesets_build_source(config->output_path, tilesets, assets->tilesets_count)) {
+        tilesets_free(tilesets, assets->tilesets_count);
+        utils_error("Tilesets: Error building %s/tilesets.c", config->output_path);
     }
-    free(palettes);
+    tilesets_free(tilesets, assets->tilesets_count);
 }

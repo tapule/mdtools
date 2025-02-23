@@ -29,10 +29,7 @@
 #include "cli_parser.h"
 #include "assets_parser.h"
 #include "palettes.h"
-
-#define MAX_TILESETS         512    /* Enough?? */
-#define MAX_FILE_NAME_LENGTH 128    /* Max length for file names */
-#define MAX_PATH_LENGTH      1024   /* Max length for paths */
+#include "tilesets.h"
 
 int
 main(int argc, char **argv) {
@@ -51,13 +48,23 @@ main(int argc, char **argv) {
     assets_parse(assets_file, &assets);
 
     fprintf(stdout, "Processing assets...\n");
+    /* Palettes */
     if (!config.disable_palettes && assets.palettes != nullptr) {
         fprintf(stdout, "Palettes: Processing...\n");
         palettes_process(&config, &assets);
         fprintf(stdout, "Palettes: Done!\n");
     } else {
-        fprintf(stdout, "Paletes processing disabled\n");
+        fprintf(stdout, "Palettes processing disabled\n");
     }
+    /* Tilesets */
+    if (!config.disable_tilesets && assets.tilesets != nullptr) {
+        fprintf(stdout, "Tilesets: Processing...\n");
+        tilesets_process(&config, &assets);
+        fprintf(stdout, "Tilesets: Done!\n");
+    } else {
+        fprintf(stdout, "Tilesets processing disabled\n");
+    }
+
 
 #if 0
     /* First try to open source path as a directory */
